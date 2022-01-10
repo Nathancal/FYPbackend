@@ -1,8 +1,7 @@
-from mongoengine.document import Document
 from mongoengine.fields import BooleanField, EmailField, StringField
 
 
-class User(Document):
+class User():
         
         userID = StringField(required=True)
         email = EmailField(required=True, unique=True)
