@@ -7,5 +7,5 @@ def create_account():
     pass
 
 @userBP.route("/login", methods=["GET"])
-def create_account():
+def login():
     pass

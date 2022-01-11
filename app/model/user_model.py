@@ -1,7 +1,7 @@
 from mongoengine.fields import BooleanField, EmailField, StringField
 from mongoengine.document import Document, EmbeddedDocument
 
-class User(EmbeddedDocument):
+class UserEmb(EmbeddedDocument):
         
         userID = StringField(required=True)
         email = EmailField(required=True, unique=True)
