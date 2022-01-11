@@ -1,6 +1,7 @@
-from mongoengine.fields import BooleanField, DateTimeField, DecimalField, EmailField, EmbeddedDocumentField, ListField, StringField
-from mongoengine.document import Document, EmbeddedDocument
-from app.model.user_model import User
+from flask.scaffold import F
+from mongoengine.fields import BooleanField, DateTimeField, DecimalField, EmbeddedDocumentField, ListField, StringField
+from mongoengine.document import Document
+from app.model.user_model import UserEmb
 
 class Pickup(Document):
 
@@ -10,4 +11,5 @@ class Pickup(Document):
     hostId = StringField(required=True)
     address = StringField(required=True)
     date = DateTimeField()
-    passengers = ListField(EmbeddedDocumentField(User))
+    completed = BooleanField(default=False)
+    passengers = ListField(EmbeddedDocumentField(UserEmb))
