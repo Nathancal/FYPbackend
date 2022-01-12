@@ -10,7 +10,7 @@ class UserEmb(EmbeddedDocument):
         password = StringField(required=True)
         admin = BooleanField(default=False)
 
-class UserDoc(Document):
+class User(Document):
 
         userID = StringField(required=True)
         email = EmailField(required=True, unique=True)

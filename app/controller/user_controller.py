@@ -1,9 +1,6 @@
 import datetime
-import json
-from re import split
-from typing import ParamSpecKwargs
 from mongoengine.errors import NotUniqueError, ValidationError
-from app.model.user_model import UserDoc
+from app.model.user_model import User
 import uuid
 from app.utility.parsejson_utility import parse_json
 from flask import request, make_response, jsonify
@@ -20,7 +17,7 @@ def signup():
         
         splitHash = hash.split("'", 3)
 
-        user = UserDoc()
+        user = User()
         user.userID = uuid.uuid4().hex
         user.email = request.json["email"]
         user.password = str(splitHash[1])
@@ -29,7 +26,7 @@ def signup():
 
         user.save()
 
-        userResponseObj = UserDoc._get_collection()
+        userResponseObj = User._get_collection()
 
         return make_response(jsonify(
             {"message": "successfully created an account.",
@@ -48,7 +45,7 @@ def signup():
 
 def login():
 
-        user = UserDoc._get_collection()
+        user = User._get_collection()
 
         checkEmailExists = user.find_one({'email': request.json["email"]})
 
@@ -63,12 +60,13 @@ def login():
                     'user': checkEmailExists["email"],
                     'admin': checkEmailExists["admin"],
                     'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)
-                })
+                },'TestSecret', algorithm="HS256")
 
                 return make_response(jsonify({
                     "message": "successfully logged in",
-                    "token": token.decode('utf-8'),
-                    "data": parse_json(checkEmailExists)
+                    "token": token,
+                    "userId": parse_json(checkEmailExists["userID"]),
+                    "firstName": parse_json(checkEmailExists["firstName"])
                 }))
             
             else:
