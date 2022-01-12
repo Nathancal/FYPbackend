@@ -6,10 +6,10 @@ from flask import json, request, make_response, jsonify
 
 
 def create_pickup_point():
-    
+
     try:
         print(request.json["hostId"])
-        
+
         pickup = Pickup()
         pickup.pickupId = uuid.uuid4().hex
         pickup.hostId = request.json["hostId"]
@@ -22,31 +22,32 @@ def create_pickup_point():
         pickup.save()
 
         return make_response(jsonify({
-            "message": "rendezvous successfully created!"
+            "message": "rendezvous successfully created!",
+            "address": parse_json(pickup.address)
         }))
     except ValidationError as e:
         error = e.message
         return make_response(jsonify({
-            "message":"some fields may be empty please try again.",
+            "message": "some fields may be empty please try again.",
             "error": error
-        }),404)
+        }), 404)
 
     except TypeError as e:
         return make_response(jsonify({
             "message": "incorrect or incomplete data provided."
         }), 404)
 
-def get_pickup_points_for_user():
 
+def get_pickup_points_for_user():
 
     pickupCol = Pickup._get_collection()
 
-    pickupFound = pickupCol.find_one(
-        {"pickupId": request.json["pickupId"]}
+    pickupFound = pickupCol.find(
+        {"hostId": request.headers["userId"]}
     )
 
     if pickupFound is not None:
         return make_response(jsonify({
-            "message": "rendezvous has been found",
+            "message": "user has pickups hosted",
             "data": parse_json(pickupFound)
         }))
