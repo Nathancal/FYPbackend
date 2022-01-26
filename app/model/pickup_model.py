@@ -1,4 +1,3 @@
-from flask.scaffold import F
 from mongoengine.fields import BooleanField, DateTimeField, DecimalField, DynamicField, EmbeddedDocumentField, ListField, StringField
 from mongoengine.document import Document
 
@@ -11,3 +10,4 @@ class Pickup(Document):
     address = StringField()
     date = DynamicField()
     time = DynamicField()
+    passengers = ListField()
