@@ -1,4 +1,4 @@
-from mongoengine.fields import BooleanField, EmailField, StringField
+from mongoengine.fields import BooleanField, EmailField, StringField, IntField
 from mongoengine.document import Document, EmbeddedDocument
 
 class UserEmb(EmbeddedDocument):
@@ -18,3 +18,5 @@ class User(Document):
         lastName = StringField(max_length=40, required=True)
         password = StringField(required=True)
         admin = BooleanField(default=False)
+        totalJourneys = IntField(default=0)
+
