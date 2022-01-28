@@ -1,7 +1,9 @@
 import datetime
+from importlib.metadata import requires
 from mongoengine.errors import NotUniqueError, ValidationError
 from app.model.user_model import User
 import uuid
+from app.model.user_rating_model import userRating
 from app.utility.parsejson_utility import parse_json
 from flask import request, make_response, jsonify
 import jwt
@@ -80,3 +82,13 @@ def login():
         return make_response(jsonify({
             "message": "Email does not exist, please create an account"
         }))
+
+def review_user():
+
+    newRating = userRating()
+    newRating.ratingId = uuid.uuid4().hex
+    newRating.userId = request.headers["userId"]
+    newRating.hostId = request.headers["hostId"]
+    newRating.
+
+
