@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
+from pymongo import GEO2D
+
 
 from app.utility.dbconnect_utility import DBConnect 
 
