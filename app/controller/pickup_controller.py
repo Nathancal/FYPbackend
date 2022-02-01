@@ -1,4 +1,5 @@
-import json
+from ast import parse
+from datetime import datetime
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 import uuid
@@ -11,11 +12,19 @@ def create_pickup_point():
     try:
         print(request.json["hostId"])
 
+        lat = request.json["lat"]
+        lng = request.json["lng"]
+
+        locationObj = {
+            'type': 'Point',
+            'coordinates': [lat, lng]
+        }
+
         pickup = Pickup()
         pickup.pickupId = uuid.uuid4().hex
         pickup.hostId = request.json["hostId"]
-        pickup.lat = request.json["lat"]
-        pickup.lng = request.json["lng"]
+        pickup.location = locationObj
+        pickup.createdAt = datetime.utcnow
         pickup.date = request.json["date"]
         pickup.time = request.json["time"]
         pickup.address = request.json["address"]
@@ -137,12 +146,28 @@ def get_pickup_points_for_user():
 
     pickupCol = Pickup._get_collection()
 
-    pickupFound = pickupCol.find(
+    pickupsFound = pickupCol.find(
         {"hostId": request.headers["userId"]}
     )
 
-    if pickupFound is not None:
+    if pickupsFound is not None:
         return make_response(jsonify({
             "message": "user has pickups hosted",
-            "data": parse_json(pickupFound)
+            "data": parse_json(pickupsFound)
         }))
+
+def get_pickup_points_for_location():
+
+    pickupCol = Pickup._get_collection()
+
+    pickupsFound = pickupCol.find(
+        {"location.coordinates": {"$within": {"$center": [[request.json["lat"], request.json["lng"]], request.json["distance"]]}}}
+    )
+
+    if pickupsFound is not None:
+        return make_response(jsonify({
+            "message": "pickups in your area have been found",
+            "data": parse_json(pickupsFound)
+        }))
+
+
