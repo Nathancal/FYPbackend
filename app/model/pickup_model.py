@@ -1,4 +1,4 @@
-from mongoengine.fields import PointField, DynamicField, DateTimeField, ListField, StringField
+from mongoengine.fields import PointField, DynamicField, DateTimeField, ListField, StringField, IntField
 from mongoengine.document import Document
 
 class Pickup(Document):
@@ -10,4 +10,9 @@ class Pickup(Document):
     date = DynamicField()
     time = DynamicField()
     createdAt = DateTimeField()
+    totalNumPassengers = IntField()
     passengers = ListField()
+    pickupStatus = StringField()
+    startedAt = DateTimeField()
+    completedAt = DateTimeField()
+    milesTravelled = DynamicField()

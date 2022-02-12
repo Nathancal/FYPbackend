@@ -1,10 +1,14 @@
 from ast import parse
 from datetime import datetime
+import re
+from xml.etree.ElementTree import PI
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
+from app.model.user_model import User
 import uuid
 from app.utility.parsejson_utility import parse_json
 from flask import request, make_response, jsonify
+from pymongo import GEO2D
 
 
 def create_pickup_point():
@@ -156,18 +160,52 @@ def get_pickup_points_for_user():
             "data": parse_json(pickupsFound)
         }))
 
+
 def get_pickup_points_for_location():
 
     pickupCol = Pickup._get_collection()
 
-    pickupsFound = pickupCol.find(
-        {"location.coordinates": {"$within": {"$center": [[request.json["lat"], request.json["lng"]], request.json["distance"]]}}}
+    pickupsFound = pickupCol.find({"location": {"$within": {"$center": [[request.json["lat"], request.json["lng"]], 0.1]}}})
+   
+    if pickupsFound is not None:
+
+        return make_response(jsonify({
+                "message": "pickups in your area have been found",
+                "data": parse_json(pickupsFound)
+        }),201)
+    else:
+        return make_response(jsonify({
+            "message": "no pickups have been found in this area."
+        }),404)
+
+def get_host_details():
+
+    pickupCol = Pickup()._get_collection()
+
+    pickupFound = pickupCol.find(
+        {"pickupId":request.json["pickupId"],"hostId": request.json["hostId"]}
     )
 
-    if pickupsFound is not None:
+    if pickupFound is not None: 
+
+        userCol = User._get_collection()
+
+        userFound = userCol.find_one({
+            "userID": request.json["hostId"]
+        })
+
+        if userFound is not None:
+
+            return make_response(jsonify({
+                "message": "User profile has been found",
+                "data": parse_json(userFound)
+            }))
+        else:
+            return make_response(jsonify({
+                "message": "user has not been found"
+            }))
+
+    else:
         return make_response(jsonify({
-            "message": "pickups in your area have been found",
-            "data": parse_json(pickupsFound)
+            "message": "a pickup has not been found associated with this user."
         }))
-
-

@@ -15,3 +15,7 @@ from app.view.user_routes import userBP
 
 app.register_blueprint(userBP)
 app.register_blueprint(pickupBP)
+
+if __name__ == '__main__':
+    context = ('local.crt', 'local.key')#certificate and key files
+    app.run(debug=True, ssl_context=context)
