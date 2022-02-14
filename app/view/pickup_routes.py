@@ -1,6 +1,6 @@
 from ntpath import join
 from flask.blueprints import Blueprint
-from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup
+from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup, get_passenger_details
 
 pickupBP = Blueprint('pickup', __name__, url_prefix='/api/v1/pickup')
 
@@ -27,3 +27,7 @@ def get_rendezvous_at_location():
 @pickupBP.route("/gethostdetails", methods=["POST"])
 def get_host_info():
     return get_host_details()
+
+@pickupBP.route("/getpassengerdetails", methods=["POST","GET"])
+def get_passenger_dets():
+    return get_passenger_details()

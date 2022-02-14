@@ -209,6 +209,25 @@ def get_pickup_points_for_location():
             "message": "no pickups have been found in this area."
         }), 404)
 
+def get_passenger_details():
+
+    userCol = User._get_collection()
+
+    userFound = userCol.find({
+        "userID": request.json["passengerId"]
+    })
+
+    if userFound:
+
+        return make_response(jsonify({
+            "message": "user details have been found",
+            "data": userFound
+        }))
+
+    else: 
+        return make_response(jsonify({
+            "message": "user has not been found."
+        }))
 
 def get_host_details():
 
