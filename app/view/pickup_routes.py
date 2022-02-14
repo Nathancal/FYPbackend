@@ -1,12 +1,16 @@
 from ntpath import join
 from flask.blueprints import Blueprint
-from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, get_pickup_points_for_location, join_pickup, get_host_details
+from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup
 
 pickupBP = Blueprint('pickup', __name__, url_prefix='/api/v1/pickup')
 
 @pickupBP.route("/create", methods=["POST"])
 def create_rendezvous():
     return create_pickup_point()
+
+@pickupBP.route("/exitpickup", methods=["POST", "PUT"])
+def exit_rendezvous():
+    return exit_pickup()
 
 @pickupBP.route("/joinpickup", methods=["POST"])
 def join_rendezvous():

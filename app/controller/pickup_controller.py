@@ -1,14 +1,10 @@
-from ast import parse
-from datetime import datetime
-import re
-from xml.etree.ElementTree import PI
+import datetime
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
 import uuid
 from app.utility.parsejson_utility import parse_json
 from flask import request, make_response, jsonify
-from pymongo import GEO2D
 
 
 def create_pickup_point():
@@ -32,6 +28,7 @@ def create_pickup_point():
         pickup.date = request.json["date"]
         pickup.time = request.json["time"]
         pickup.address = request.json["address"]
+        pickup.totalNumPassengers = request.json["totalNumPassengers"]
 
         pickup.save()
 
@@ -56,33 +53,63 @@ def join_pickup():
 
     pickupCol = Pickup._get_collection()
 
-    pickupFound = pickupCol.find(
-        {"pickupId": request.headers["pickupId"]}
-    )
+    pickupCheck = pickupCol.find_one({
+        "pickupId": request.json["pickupId"],
+    })
 
-    if pickupFound:
+    if pickupCheck:
 
-        checkHost = pickupCol.find({
-            "hostId": request.headers["userId"]
-        })
+        if pickupCheck["passengers"]:
 
-        if checkHost:
+            for passenger in pickupCheck["passengers"]:
 
+                if passenger["passengerId"] == request.json["userId"]:
+
+                    return make_response(jsonify({
+                        "message": "you have already joined this pickup."}
+                    ), 409)
+                else:
+
+                    if len(pickupCheck["passengers"]) >= pickupCheck["totalNumPassengers"]:
+                        return make_response(jsonify({
+                            "message": "this pickup is full, please try another."
+                        }))
+
+                    joinPickup = pickupCol.update_one({
+                        "pickupId": request.json["pickupId"],
+                    },
+                        {"$push": {
+                            "passengers":
+                            {"passengerId": request.json["userId"],
+                             "date": datetime.datetime.utcnow()
+                             }
+
+                        }}, True)
+
+                    return make_response(jsonify({
+                        "message": "success!",
+                    }), 201)
+
+        else:
+
+            joinPickup = pickupCol.update_one({
+                "pickupId": request.json["pickupId"],
+            },
+                {"$push": {
+                    "passengers":
+                    {"passengerId": request.json["userId"],
+                     "date": datetime.datetime.utcnow()
+                     }
+                }}, True)
             return make_response(jsonify({
-                "message": "you cannot join a pickup you have created."
-            }))
-
-        pickupCol.update_one({"pickupId": request.headers["pickupId"]},
-                             {"$push": {"passengers.$.passengerId": request.headers["userId"]}})
-
-        return make_response(jsonify({
-            "message": "You have successfully joined the pickup."
-        }))
+                "message": "success!",
+            }), 201)
 
     else:
+
         return make_response(jsonify({
-            "message": "this pickup has not been found please try again."
-        }))
+            "message": "pickup not found",
+        }), 404)
 
 
 def host_remove_passenger():
@@ -116,30 +143,33 @@ def exit_pickup():
     pickupCol = Pickup._get_collection()
 
     pickupFound = pickupCol.find(
-        {"pickupId": request.headers["pickupId"]}
+        {"pickupId": request.json["pickupId"]}
     )
 
     if pickupFound:
 
-        checkHost = pickupCol.find({
-            "hostId": request.headers["userId"]
-        })
-
-        if checkHost:
+        if pickupFound["hostId"] == request.json["userId"]:
 
             return make_response(jsonify({
                 "message": "host cannot leave their own pickup, please delete pickup instead."
             }))
 
         checkPassengerExists = pickupCol.find({
-            "passengers.$.passengerId": request.headers["userId"]
+            "passengers.$.passengerId": request.json["userId"]
         })
 
         if checkPassengerExists:
 
-            pickupCol.update_one({"pickupId": request.headers["pickupId"]},
-                                 {"$pull": {"passengers.$.passengerId": request.headers["userId"]}})
-
+            exitPickup = pickupCol.update_one({
+                "pickupId": request.json["pickupId"],
+            },
+            {"$pull": {
+                "passengers":
+                {"passengerId": request.json["userId"] }}})
+            
+            return make_response(jsonify({
+                "message": "you have successfully left the pickup."
+            }))
         else:
             return make_response(jsonify({
                 "message": "Im sorry, you have not been found in this pickup point."
@@ -165,28 +195,31 @@ def get_pickup_points_for_location():
 
     pickupCol = Pickup._get_collection()
 
-    pickupsFound = pickupCol.find({"location": {"$within": {"$center": [[request.json["lat"], request.json["lng"]], 0.1]}}})
-   
+    pickupsFound = pickupCol.find({"location": {"$within": {"$center": [
+                                  [request.json["lat"], request.json["lng"]], 0.1]}}})
+
     if pickupsFound is not None:
 
         return make_response(jsonify({
-                "message": "pickups in your area have been found",
-                "data": parse_json(pickupsFound)
-        }),201)
+            "message": "pickups in your area have been found",
+            "data": parse_json(pickupsFound)
+        }), 201)
     else:
         return make_response(jsonify({
             "message": "no pickups have been found in this area."
-        }),404)
+        }), 404)
+
 
 def get_host_details():
 
     pickupCol = Pickup()._get_collection()
 
     pickupFound = pickupCol.find(
-        {"pickupId":request.json["pickupId"],"hostId": request.json["hostId"]}
+        {"pickupId": request.json["pickupId"],
+            "hostId": request.json["hostId"]}
     )
 
-    if pickupFound is not None: 
+    if pickupFound is not None:
 
         userCol = User._get_collection()
 
