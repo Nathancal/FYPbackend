@@ -1,4 +1,5 @@
 import datetime
+from itsdangerous import json
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
@@ -48,6 +49,28 @@ def create_pickup_point():
             "message": "incorrect or incomplete data provided."
         }), 404)
 
+def check_user_is_passenger():
+
+    pickupCol = Pickup._get_collection()
+
+    checkPassengerExists = pickupCol.find({
+            "pickupId": request.json["pickupId"],
+            "passengers.$.passengerId": request.json["userId"]
+        })
+
+    if checkPassengerExists:
+
+        return make_response(jsonify({
+            "message": "user is a passenger in this pickup",
+            "isPassenger": True,
+            "data": parse_json(checkPassengerExists)
+        }))
+    else:
+        return make_response(jsonify({
+            "message": "user has not been found in this pickup.",
+            "isPassenger": False
+        }))
+    
 
 def join_pickup():
 
@@ -155,6 +178,7 @@ def exit_pickup():
             }))
 
         checkPassengerExists = pickupCol.find({
+            "pickupId": request.json["pickupId"],
             "passengers.$.passengerId": request.json["userId"]
         })
 
@@ -221,7 +245,7 @@ def get_passenger_details():
 
         return make_response(jsonify({
             "message": "user details have been found",
-            "data": userFound
+            "data": parse_json(userFound)
         }))
 
     else: 
