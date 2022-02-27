@@ -1,7 +1,8 @@
 import uuid
 import datetime
-from flask import request
+from flask import jsonify, make_response, request
 from app.model.message_model import Message
+from app.utility.parsejson_utility import parse_json
 
 def create_message():
 
@@ -18,5 +19,30 @@ def create_message():
         message.sentAt = datetime.datetime.utcnow()
 
         message.save()
-    except:
-        
+
+
+        return make_response(jsonify({
+            "message": "message successfully sent.",
+            "date": datetime.datetime.utcnow()
+        }))
+
+    except Exception as e:
+        return make_response(jsonify({
+            "message": "unable to create message, please try again."
+        },e), 500)
+
+def get_message():
+
+    messageCol = Message._get_collection()
+
+    message = messageCol.find({
+        "messageId": request.json["messageId"]
+    })
+
+    if message is not None:
+
+        return make_response(jsonify({
+            "message": "message has been found.",
+            "data": parse_json(message)
+
+        }))
