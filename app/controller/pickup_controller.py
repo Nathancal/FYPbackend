@@ -1,6 +1,7 @@
 import datetime
 from itsdangerous import json
 from mongoengine.errors import ValidationError
+from pyparsing import empty
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
 import uuid
@@ -13,22 +14,31 @@ def create_pickup_point():
     try:
         print(request.json["hostId"])
 
-        lat = request.json["lat"]
-        lng = request.json["lng"]
+        eLat = request.json["eLat"]
+        eLng = request.json["eLng"]
 
-        locationObj = {
+        rLat = request.json["rLat"]
+        rLng = request.json["rLng"]
+        embarkLocationObj = {
             'type': 'Point',
-            'coordinates': [lat, lng]
+            'coordinates': [eLat, eLng]
+        }
+
+        returnLocationObj = {
+            'type': 'Point',
+            'coordinates': [rLat, rLng]
         }
 
         pickup = Pickup()
         pickup.pickupId = uuid.uuid4().hex
         pickup.hostId = request.json["hostId"]
-        pickup.location = locationObj
-        pickup.createdAt = datetime.utcnow
+        pickup.embarkLocation = parse_json(embarkLocationObj)
+        pickup.returnLocation = parse_json(returnLocationObj)
+        pickup.createdAt = datetime.datetime.utcnow()
+        pickup.embarkAddress = request.json["embarkAddress"]
+        pickup.returnAddress = request.json["returnAddress"]
         pickup.date = request.json["date"]
         pickup.time = request.json["time"]
-        pickup.address = request.json["address"]
         pickup.totalNumPassengers = request.json["totalNumPassengers"]
 
         pickup.save()
@@ -53,18 +63,22 @@ def check_user_is_passenger():
 
     pickupCol = Pickup._get_collection()
 
-    checkPassengerExists = pickupCol.find({
-            "pickupId": request.json["pickupId"],
-            "passengers.$.passengerId": request.json["userId"]
-        })
+    checkPassengerExists = pickupCol.find_one({
+            "pickupId": request.json["pickupId"]
+                    })
 
-    if checkPassengerExists:
 
-        return make_response(jsonify({
-            "message": "user is a passenger in this pickup",
-            "isPassenger": True,
-            "data": parse_json(checkPassengerExists)
-        }))
+    if checkPassengerExists is not None:
+
+        for passenger in checkPassengerExists["passengers"]:
+
+            if passenger["passengerId"] == request.json["userId"]:
+
+                return make_response(jsonify({
+                    "message": "user is a passenger in this pickup",
+                    "isPassenger": True,
+                    "data": parse_json(checkPassengerExists)
+                }))
     else:
         return make_response(jsonify({
             "message": "user has not been found in this pickup.",
@@ -219,7 +233,7 @@ def get_pickup_points_for_location():
 
     pickupCol = Pickup._get_collection()
 
-    pickupsFound = pickupCol.find({"location": {"$within": {"$center": [
+    pickupsFound = pickupCol.find({"embarkLocation": {"$within": {"$center": [
                                   [request.json["lat"], request.json["lng"]], 0.1]}}})
 
     if pickupsFound is not None:

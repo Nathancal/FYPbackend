@@ -7,8 +7,8 @@ def initialise_carpool():
 
     carpool = Carpool()
     carpool.carpoolId = uuid.uuid4().hex
-    carpool.firstPickupId = request.headers["firstPickupId"]
-    carpool.secondPickupId = request.headers["secondPickupId"]
+    carpool.firstPickupId = request.headers["embarkPickupId"]
+    carpool.secondPickupId = request.headers["returnPickupId"]
     carpool.hostId = request.headers["hostId"]
 
     carpool.save()
