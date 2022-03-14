@@ -1,4 +1,3 @@
-from ntpath import join
 from flask.blueprints import Blueprint
 from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, check_user_is_passenger, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup, get_passenger_details
 
