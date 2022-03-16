@@ -28,6 +28,13 @@ def join_journey():
 
             if passenger["passengerId"] == passengerId:
 
+                if hasattr(passenger, 'joined'):
+
+                    if passenger["joined"] is True:
+                        return make_response(jsonify({
+                            "message": "you have already joined this journey."
+                        }))
+
                 passengerUpdate = {
                     'passengers.$.joinedAt': joinedAt,
                     'passengers.$.joined': True
