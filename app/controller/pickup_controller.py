@@ -1,4 +1,5 @@
 import datetime
+from itsdangerous import json
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
@@ -77,6 +78,13 @@ def check_user_is_passenger():
                     "isPassenger": True,
                     "data": parse_json(checkPassengerExists)
                 }))
+            elif checkPassengerExists["hostId"] == request.json["userId"]: 
+                return make_response(jsonify({
+                    "message": "you are the host of this pickup",
+                    "isHost": True,
+                    
+                }))
+              
     else:
         return make_response(jsonify({
             "message": "user has not been found in this pickup.",

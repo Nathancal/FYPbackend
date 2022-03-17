@@ -1,8 +1,12 @@
+from ntpath import join
 from app import app
 from flask_socketio import SocketIO
 import eventlet
-from flask import session
+from flask import request, session
 from flask_socketio import emit, join_room
+
+from app.model.pickup_model import Pickup
+
 
 
 async_mode = 'eventlet'
@@ -12,30 +16,66 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode=async_mode)
 
 activeUsers = []
 
+@socketio.on('hasJoined')
+def checkUserJoined(message):
+
+    pickupCol = Pickup._get_collection()
+    userJoined = pickupCol.find_one({
+        "pickupId": message["pickupId"]
+    })
+
+    if userJoined is not None:
+
+        for passenger in userJoined["passengers"]:
+        
+            if passenger["passengerId"] == message["userId"]:
+
+                if hasattr(passenger, 'joined'):
+                    journeyGroup = message["pickupId"]
+
+
+                    emit('hasJoined', { 'userId':message["userId"]}, broadcast=True)
+            
+
 
 @socketio.on('joined')
 def joined(message):
 
+    pickupCol = Pickup._get_collection()
 
-    if hasattr(activeUsers, 'userId'):
-        if message['userId'] not in activeUsers['userId']:
-            activeUsers.append({
-                'userId': message['userId'],
-                'forename': message['forename']
-            })
-    else:
-        activeUsers.append({
-            'userId': message['userId'],
-            'forename': message['forename']
-        })
+    userJoined = pickupCol.find_one({
+        "pickupId": message["pickupId"]
+    })
 
-    journeyGroup = message["pickupId"]
+    if userJoined is not None:
 
-    print("Pickup id: " + message["pickupId"])
-    join_room(journeyGroup)
+        for passenger in userJoined["passengers"]:
+        
+            if passenger["passengerId"] == message["userId"]:
 
-    emit('joined', {'msg': message["forename"] + ' has joined the pickup', 'userId': message["userId"],
-         'forename': message['forename'], 'users': activeUsers}, room=journeyGroup, broadcast=True)
+                if hasattr(passenger, 'joined'):
+
+                      if hasattr(activeUsers, 'userId'):
+                        if message['userId'] not in activeUsers['userId']:
+                            activeUsers.append({
+                                'userId': message['userId'],
+                                'forename': message['forename']
+                            })
+                        else:
+                            activeUsers.append({
+                                'userId': message['userId'],
+                                'forename': message['forename']
+                            })
+
+                        journeyGroup = message["pickupId"]
+  
+                        
+
+                        print("Pickup id: " + message["pickupId"])
+                        join_room(journeyGroup)
+
+                        emit('joined', {'msg': message["forename"] + ' has joined the pickup', 'userId': message["userId"],
+                            'forename': message['forename'], 'users': activeUsers}, room=journeyGroup, broadcast=True)
 
 
 if __name__ == '__main__':
