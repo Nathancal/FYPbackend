@@ -1,5 +1,4 @@
 import datetime
-from itsdangerous import json
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
@@ -124,7 +123,8 @@ def join_pickup():
                         {"$push": {
                             "passengers":
                             {"passengerId": request.json["userId"],
-                             "date": datetime.datetime.utcnow()
+                             "date": datetime.datetime.utcnow(),
+                             "joined": False
                              }
 
                         }}, True)
@@ -141,7 +141,8 @@ def join_pickup():
                 {"$push": {
                     "passengers":
                     {"passengerId": request.json["userId"],
-                     "date": datetime.datetime.utcnow()
+                     "date": datetime.datetime.utcnow(),
+                     "joined": False
                      }
                 }}, True)
             return make_response(jsonify({
