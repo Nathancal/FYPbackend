@@ -30,10 +30,10 @@ activeUsers = []
 user = {}
 
 
-@socketio.on('start')
+@socketio.on('autocomplete')
 def startJourney(message):
 
-    emit('start', {'isStarted': message["start"]},room=message["pickupId"])
+    emit('autocomplete ', {'isCompleted': message["completed"]},room=message["pickupId"])
 
 
 
