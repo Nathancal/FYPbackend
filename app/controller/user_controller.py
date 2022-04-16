@@ -1,5 +1,6 @@
 import datetime
 from importlib.metadata import requires
+from itsdangerous import json
 from mongoengine.errors import NotUniqueError, ValidationError
 from app.model.user_model import User
 import uuid
@@ -77,11 +78,45 @@ def login():
         else:
             return make_response(jsonify({
                 "message": "password is incorrect."
-            }),404)
+            }), 404)
     else:
         return make_response(jsonify({
             "message": "Email does not exist, please create an account"
-        }),404)
+        }), 404)
 
 
+def get_user_miles():
 
+    user = User._get_collection()
+
+    findUser = user.find_one({'userID': request.json["userID"]})
+
+    if findUser is not None:
+
+        return make_response(jsonify({
+            "message": "miles returned successfully",
+            "miles": findUser["totalMiles"]
+        }))
+
+
+def update_user_miles():
+
+    user = User._get_collection()
+
+    findUser = user.find_one({'userID': request.json["userID"]})
+
+    if findUser is not None:
+
+        updateMiles = user.update_one({
+            "userID": request.json["userID"],
+        },
+        {"$set": {"totalMiles": request.json["updateTotalMiles"]}})
+
+        return make_response(jsonify({
+            "message": "miles successfully updated."
+        }))
+    else:
+        
+        return make_response(jsonify({
+            "message": "user has not been found"
+        }))

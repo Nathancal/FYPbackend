@@ -9,6 +9,7 @@ class userRating(EmbeddedDocument):
     ratingId = StringField(required=True)
     userPostedId = StringField(required=True)
     userToReviewId = StringField(required=True)
+    pickupId = StringField(required=True)
     score = DecimalField(required=True)
     comment = StringField()
     date = DateTimeField()

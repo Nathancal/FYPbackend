@@ -306,3 +306,21 @@ def get_host_details():
         return make_response(jsonify({
             "message": "a pickup has not been found associated with this user."
         }))
+
+def complete_pickup():
+
+
+    
+    pickupCol = Pickup()._get_collection()
+
+    pickupFound = pickupCol.find(
+        {"pickupId": request.json["pickupId"],
+            "hostId": request.json["hostId"]})
+
+    if pickupFound is not None:
+        updatePickup = pickupCol.update_one({
+            "userID": request.json["userID"],
+        },
+        {"$set": {"pickupStatus": "completed", "duration": request.json["duration"], "milesTravelled": request.json["milesTravelled"], "journeyCompletedAt": datetime.datetime.utcnow()}})
+         
+
