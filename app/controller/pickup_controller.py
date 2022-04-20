@@ -1,4 +1,5 @@
 import datetime
+from itsdangerous import json
 from mongoengine.errors import ValidationError
 from app.model.pickup_model import Pickup
 from app.model.user_model import User
@@ -67,6 +68,11 @@ def check_user_is_passenger():
 
 
     if checkPassengerExists is not None:
+
+        if len(checkPassengerExists["passengers"]) == 0:
+            return make_response(jsonify({
+                "message": "no passengers are in this pickup yet."
+            }))
 
         for passenger in checkPassengerExists["passengers"]:
 
@@ -313,14 +319,32 @@ def complete_pickup():
     
     pickupCol = Pickup()._get_collection()
 
-    pickupFound = pickupCol.find(
+    pickupFound = pickupCol.find_one(
         {"pickupId": request.json["pickupId"],
-            "hostId": request.json["hostId"]})
+            "hostId": request.json["userID"]})
 
     if pickupFound is not None:
         updatePickup = pickupCol.update_one({
-            "userID": request.json["userID"],
+            "hostId": request.json["userID"],
         },
         {"$set": {"pickupStatus": "completed", "duration": request.json["duration"], "milesTravelled": request.json["milesTravelled"], "journeyCompletedAt": datetime.datetime.utcnow()}})
          
 
+        pickupUpdated = pickupCol.find_one(
+        {"pickupId": request.json["pickupId"],
+            "hostId": request.json["userID"]})
+
+        print(pickupUpdated)
+
+        if pickupUpdated["pickupStatus"] == "completed": 
+            
+            return make_response(jsonify({
+                "message": "pickup has been successfully completed",
+                "pickupStatus": pickupUpdated["pickupStatus"]
+            }))
+        else:
+
+            return make_response(jsonify({
+                "message":"unable to complete pickup please try again",
+                "pickupStatus": "pending"
+            }))

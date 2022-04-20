@@ -32,8 +32,16 @@ user = {}
 
 @socketio.on('autocomplete')
 def startJourney(message):
+    
+    pickupCol = Pickup._get_collection()
 
-    emit('autocomplete ', {'isCompleted': message["completed"]},room=message["pickupId"])
+    pickupFound = pickupCol.find_one({
+        "pickupId": message["pickupId"]
+    })
+
+    if pickupFound is not None: 
+
+        emit('autocomplete ', {'isCompleted': pickupFound["pickupStatus"]},room=message["pickupId"])
 
 
 

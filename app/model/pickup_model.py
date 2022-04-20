@@ -1,3 +1,4 @@
+from email.policy import default
 from mongoengine.fields import PointField, DynamicField, DateTimeField, ListField, StringField, IntField, FloatField
 from mongoengine.document import Document
 
@@ -15,7 +16,7 @@ class Pickup(Document):
     createdAt = DateTimeField()
     totalNumPassengers = IntField()
     passengers = ListField()
-    pickupStatus = StringField()
+    pickupStatus = StringField(default="pending")
     journeyStartedAt = DateTimeField()
     journeyCompletedAt = DateTimeField()
     duration = FloatField()
