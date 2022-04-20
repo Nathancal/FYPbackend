@@ -61,7 +61,7 @@ def login():
         crossRefPassword = bytes(checkEmailExists["password"], 'UTF-8')
 
         if bcrypt.checkpw(bytes(password, 'UTF-8'), crossRefPassword):
-
+ 
             token = jwt.encode({
                 'user': checkEmailExists["email"],
                 'admin': checkEmailExists["admin"],
@@ -119,4 +119,4 @@ def update_user_miles():
         
         return make_response(jsonify({
             "message": "user has not been found"
-        }))
+        })) 
