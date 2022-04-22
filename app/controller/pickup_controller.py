@@ -131,7 +131,7 @@ def join_pickup():
                             {"passengerId": request.json["userId"],
                              "date": datetime.datetime.utcnow(),
                              "joined": False
-                             }
+                            }
 
                         }}, True)
 

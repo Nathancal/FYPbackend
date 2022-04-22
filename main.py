@@ -41,7 +41,9 @@ def startJourney(message):
 
     if pickupFound is not None: 
 
-        emit('autocomplete ', {'isCompleted': pickupFound["pickupStatus"]},room=message["pickupId"])
+        if pickupFound["pickupStatus"] == 'completed':
+
+            emit('autocomplete ', {'isCompleted': message["completed"]},room=message["pickupId"])
 
 
 
@@ -56,15 +58,25 @@ def checkedIn(message):
 
     if pickupFound is not None:
 
+        if pickupFound['pickupStatus'] == 'complete':
+
+            emit('checkedin', {'isComplete': True}, room=message['pickupId'])
+
+
         for passenger in pickupFound["passengers"]:
 
             if passenger["passengerId"] == message["userId"]:
-
+                    
                 if passenger["joined"] == True:
 
                     for index, user in enumerate(activeUsers):
                         print(user)
                         if user["userId"] == message["userId"]:
+                          
+
+                            next
+              
+                        else: 
                             print("got HERE!")
                             user = {'userId': message["userId"],
                                           'pickupId': message["pickupId"],
@@ -72,14 +84,8 @@ def checkedIn(message):
 
                             activeUsers[index] = user
 
-                            emit('checkedin', {'users': [activeUsers[index]]},
+                            emit('checkedin', {'users': [activeUsers[index]], 'isComplete': False},
                                 room=message["pickupId"])
-                else:
-
-                    print("ALL ELSE")
-                    emit('checkedin', {'users': activeUsers},
-                         room=message["pickupId"])
-
 
 @socketio.on('joined')
 def joined(message):

@@ -14,7 +14,7 @@ class User(Document):
         admin = BooleanField(default=False)
         newUser = BooleanField(default=True)
         totalJourneys = IntField(default=0)
-        totalMiles = DecimalField(default=0.00)
+        totalMiles = DecimalField(default=20.00)
         avgScore = DecimalField(default=3.75)
         reviews = ListField(EmbeddedDocumentField(userRating))
 
