@@ -321,11 +321,11 @@ def complete_pickup():
 
     pickupFound = pickupCol.find_one(
         {"pickupId": request.json["pickupId"],
-            "hostId": request.json["userID"]})
+            "hostId": request.json["userId"]})
 
     if pickupFound is not None:
         updatePickup = pickupCol.update_one({
-            "hostId": request.json["userID"],
+            "hostId": request.json["userId"],
         },
         {"$set": {"pickupStatus": "completed", "duration": request.json["duration"], "milesTravelled": request.json["milesTravelled"], "journeyCompletedAt": datetime.datetime.utcnow()}})
          
