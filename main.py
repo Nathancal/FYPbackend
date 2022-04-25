@@ -44,6 +44,10 @@ def checkedIn(message):
 
     if pickupFound is not None:
 
+        if pickupFound["complete"] == 'completed':
+
+            emit('checkedin', {'isComplete':True}, room=message["pickupId"])
+
 
         for passenger in pickupFound["passengers"]:
 
@@ -59,7 +63,8 @@ def checkedIn(message):
                                         'pickupId': message["pickupId"],
                                         'joined': True} 
 
-                            emit('checkedin', {'user': [activeUsers[index]], 'isComplete': False})
+                            emit('checkedin', {'user': [activeUsers[index]], 'isComplete': False},
+                                room=message["pickupId"])
               
                         else: 
                             print("got HERE!")
