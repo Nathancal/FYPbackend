@@ -1,6 +1,8 @@
 import enum
 from app.view.journey_routes import journeyBP
 from app.view.user_routes import userBP
+from app.view.user_rating_routes import userRatingBP
+
 from app.view.pickup_routes import pickupBP
 from app import app
 from flask_socketio import SocketIO
@@ -24,27 +26,11 @@ app.wsgi_app = DBConnect(app.wsgi_app)
 app.register_blueprint(userBP)
 app.register_blueprint(pickupBP)
 app.register_blueprint(journeyBP)
+app.register_blueprint(userRatingBP)
 
 activeUsers = []
 
 user = {}
-
-
-@socketio.on('autocomplete')
-def startJourney(message):
-    
-    pickupCol = Pickup._get_collection()
-
-    pickupFound = pickupCol.find_one({
-        "pickupId": message["pickupId"]
-    })
-
-    if pickupFound is not None: 
-
-        if pickupFound["pickupStatus"] == 'completed':
-
-            emit('autocomplete ', {'isCompleted': message["completed"]},room=message["pickupId"])
-
 
 
 @socketio.on('checkedin')
@@ -58,23 +44,22 @@ def checkedIn(message):
 
     if pickupFound is not None:
 
-        if pickupFound['pickupStatus'] == 'complete':
-
-            emit('checkedin', {'isComplete': True}, room=message['pickupId'])
-
 
         for passenger in pickupFound["passengers"]:
 
             if passenger["passengerId"] == message["userId"]:
-                    
+
                 if passenger["joined"] == True:
 
                     for index, user in enumerate(activeUsers):
                         print(user)
                         if user["userId"] == message["userId"]:
-                          
 
-                            next
+                            user = {'userId': message["userId"],
+                                        'pickupId': message["pickupId"],
+                                        'joined': True} 
+
+                            emit('checkedin', {'user': [activeUsers[index]], 'isComplete': False})
               
                         else: 
                             print("got HERE!")

@@ -1,4 +1,5 @@
 
+from asyncio.windows_events import NULL
 import uuid
 from flask import request, make_response, jsonify
 from itsdangerous import json
@@ -6,21 +7,38 @@ from app.model.user_model import User
 from app.model.user_rating_model import userRating
 
 
-def set_user_rating(userId):
+def set_user_rating():
 
     userCol = User._get_collection()
 
     userScores = userCol.aggregate([
-        {"$match": {"userId": userId}},
-        {"$unwind": "reviews"},
-        {"$group": {"averageScore": {"$avg": "reviews.score"}}}
+        {"$match": {"userID": request.json["userId"]}},
+        {"$unwind": "$reviews"},
+        {"$group": {"_id":NULL, "averageScore": { "$avg": "$reviews.score"}}}
     ])
 
-    userCol.update_one({
-        "userId": userId
-    },{"$set": {
-        "score": userScores["averageScore"]
-    }})
+    scores = list(userScores)
+ 
+    print(scores)
+
+    try:
+
+        userCol.update_one({
+            "userID": request.json["userId"]
+        }, {"$set": {
+            "avgScore": scores[0]["averageScore"]
+        }})
+
+        return make_response(jsonify({
+            "message": "user rating successfully recalculated."
+        }))
+    except Exception as e:
+        return make_response(jsonify({
+            "message": "a problem has occoured updating the user rating."
+        }))
+
+
+
 
 def get_user_rating():
 
@@ -28,7 +46,7 @@ def get_user_rating():
 
     userScore = userCol.find_one({
         "userId": request.headers["userId"]
-    },{ "_id": 0, "avgScore": 1 })  
+    }, {"_id": 0, "avgScore": 1})
 
     if userScore:
 
@@ -37,7 +55,7 @@ def get_user_rating():
             "data": userScore
         }))
 
-    else: 
+    else:
 
         return make_response(jsonify({
             "message": "user has not been found"
@@ -46,8 +64,7 @@ def get_user_rating():
 
 def rate_user():
 
-    userToRate = User.objects.get(userID=request.json["userId"])
-
+    userToRate = User.objects.get(userID=request.json["userUnderReviewId"])
 
     if userToRate is not None:
 
@@ -57,7 +74,6 @@ def rate_user():
         userReview.score = request.json["score"]
         userReview.comment = request.json["comment"]
         userReview.userPostedId = request.json["userId"]
-        userReview.userToReviewId = request.json["userUnderReviewId"]
 
         userToRate.reviews.append(userReview)
 
@@ -71,4 +87,3 @@ def rate_user():
         return make_response(jsonify({
             "message": "user has not been found."
         }))
-
