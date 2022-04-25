@@ -54,28 +54,13 @@ def checkedIn(message):
             if passenger["passengerId"] == message["userId"]:
 
                 if passenger["joined"] == True:
+                    user = {'userId': message["userId"],
+                            'pickupId': message["pickupId"],
+                            'joined': True} 
 
-                    for index, user in enumerate(activeUsers):
-                        print(user)
-                        if user["userId"] == message["userId"]:
-
-                            user = {'userId': message["userId"],
-                                        'pickupId': message["pickupId"],
-                                        'joined': True} 
-
-                            emit('checkedin', {'user': [activeUsers[index]], 'isComplete': False},
-                                room=message["pickupId"])
-              
-                        else: 
-                            print("got HERE!")
-                            user = {'userId': message["userId"],
-                                          'pickupId': message["pickupId"],
-                                          'joined': True}
-
-                            activeUsers[index] = user
-
-                            emit('checkedin', {'users': [activeUsers[index]], 'isComplete': False},
-                                room=message["pickupId"])
+                    emit('checkedin', {'user': user, 'isComplete': False},
+                    room=message["pickupId"])
+            
 
 @socketio.on('joined')
 def joined(message):
