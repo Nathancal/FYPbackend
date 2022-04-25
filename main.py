@@ -44,7 +44,7 @@ def checkedIn(message):
 
     if pickupFound is not None:
 
-        if pickupFound["complete"] == 'completed':
+        if pickupFound["pickupStatus"] == 'completed':
 
             emit('checkedin', {'isComplete':True}, room=message["pickupId"])
 
