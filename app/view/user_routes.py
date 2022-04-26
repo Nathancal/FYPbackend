@@ -1,5 +1,5 @@
 from flask.blueprints import Blueprint
-from app.controller.user_controller import signup, login, get_user_miles
+from app.controller.user_controller import signup, login, get_user_miles, update_user_miles
 
 userBP = Blueprint('user', __name__, url_prefix='/api/v1/user')
 
@@ -14,3 +14,7 @@ def loginUser():
 @userBP.route("/getmiles", methods=["POST","GET"])
 def getMiles():
     return get_user_miles()
+
+@userBP.route("/updatemiles", methods=["POST", "GET"])
+def updateMiles():
+    return update_user_miles()

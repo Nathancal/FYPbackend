@@ -42,6 +42,21 @@ def create_pickup_point():
 
         pickup.save()
 
+        pickupCol = Pickup._get_collection()
+
+        joinPickup = pickupCol.update_one({
+                        "pickupId": pickup.pickupId,
+                    },
+                        {"$push": {
+                            "passengers":
+                            {"passengerId": request.json["hostId"],
+                             "date": datetime.datetime.utcnow(),
+                             "host": True,
+                             "joined": False
+                             }
+
+                        }}, True)
+
         return make_response(jsonify({
             "message": "rendezvous successfully created!",
             "address": parse_json(pickup.address)
@@ -58,14 +73,14 @@ def create_pickup_point():
             "message": "incorrect or incomplete data provided."
         }), 404)
 
+
 def check_user_is_passenger():
 
     pickupCol = Pickup._get_collection()
 
     checkPassengerExists = pickupCol.find_one({
-            "pickupId": request.json["pickupId"]
-                    })
-
+        "pickupId": request.json["pickupId"]
+    })
 
     if checkPassengerExists is not None:
 
@@ -83,19 +98,19 @@ def check_user_is_passenger():
                     "isPassenger": True,
                     "data": parse_json(checkPassengerExists)
                 }))
-            elif checkPassengerExists["hostId"] == request.json["userId"]: 
+            elif checkPassengerExists["hostId"] == request.json["userId"]:
                 return make_response(jsonify({
                     "message": "you are the host of this pickup",
                     "isHost": True,
-                    
+
                 }))
-              
+
     else:
         return make_response(jsonify({
             "message": "user has not been found in this pickup.",
             "isPassenger": False
         }))
-    
+
 
 def join_pickup():
 
@@ -131,7 +146,7 @@ def join_pickup():
                             {"passengerId": request.json["userId"],
                              "date": datetime.datetime.utcnow(),
                              "joined": False
-                            }
+                             }
 
                         }}, True)
 
@@ -214,10 +229,10 @@ def exit_pickup():
             exitPickup = pickupCol.update_one({
                 "pickupId": request.json["pickupId"],
             },
-            {"$pull": {
-                "passengers":
-                {"passengerId": request.json["userId"] }}})
-            
+                {"$pull": {
+                    "passengers":
+                    {"passengerId": request.json["userId"]}}})
+
             return make_response(jsonify({
                 "message": "you have successfully left the pickup."
             }))
@@ -260,6 +275,7 @@ def get_pickup_points_for_location():
             "message": "no pickups have been found in this area."
         }), 404)
 
+
 def get_passenger_details():
 
     userCol = User._get_collection()
@@ -275,10 +291,11 @@ def get_passenger_details():
             "data": parse_json(userFound)
         }))
 
-    else: 
+    else:
         return make_response(jsonify({
             "message": "user has not been found."
         }))
+
 
 def get_host_details():
 
@@ -313,10 +330,9 @@ def get_host_details():
             "message": "a pickup has not been found associated with this user."
         }))
 
+
 def complete_pickup():
 
-
-    
     pickupCol = Pickup()._get_collection()
 
     pickupFound = pickupCol.find_one(
@@ -325,19 +341,19 @@ def complete_pickup():
 
     if pickupFound is not None:
         updatePickup = pickupCol.update_one({
+            "pickupId": request.json["pickupId"],
             "hostId": request.json["userId"],
         },
-        {"$set": {"pickupStatus": "completed", "duration": request.json["duration"], "milesTravelled": request.json["milesTravelled"], "journeyCompletedAt": datetime.datetime.utcnow()}})
-         
+            {"$set": {"pickupStatus": "completed", "duration": request.json["duration"], "milesTravelled": request.json["milesTravelled"], "journeyCompletedAt": datetime.datetime.utcnow()}})
 
         pickupUpdated = pickupCol.find_one(
-        {"pickupId": request.json["pickupId"],
-            "hostId": request.json["userID"]})
+            {"pickupId": request.json["pickupId"],
+             "hostId": request.json["userId"]})
 
         print(pickupUpdated)
 
-        if pickupUpdated["pickupStatus"] == "completed": 
-            
+        if pickupUpdated["pickupStatus"] == "completed":
+
             return make_response(jsonify({
                 "message": "pickup has been successfully completed",
                 "pickupStatus": pickupUpdated["pickupStatus"]
@@ -345,7 +361,21 @@ def complete_pickup():
         else:
 
             return make_response(jsonify({
-                "message":"unable to complete pickup please try again",
+                "message": "unable to complete pickup please try again",
                 "pickupStatus": "pending"
             }))
 
+
+def get_pickup_details():
+
+    pickupCol = Pickup()._get_collection()
+
+    pickupFound = pickupCol.find_one(
+        {"pickupId": request.json["pickupId"]}, {"_id": 0})
+
+    if pickupFound is not None:
+
+        return make_response(jsonify({
+            "message": "pickup has been found",
+            "pickupMiles": pickupFound
+        }))

@@ -107,14 +107,27 @@ def update_user_miles():
 
     if findUser is not None:
 
-        updateMiles = user.update_one({
-            "userID": request.json["userID"],
-        },
-        {"$set": {"totalMiles": request.json["updateTotalMiles"]}})
+        try:
 
-        return make_response(jsonify({
+            print(request.json["userID"])
+            print(request.json["updateTotalMiles"])
+
+
+            updateMiles = user.update_one({
+                "userID": request.json["userID"],
+            },
+            {"$set": {"totalMiles": request.json["updateTotalMiles"]}})
+
+            return make_response(jsonify({
             "message": "miles successfully updated."
         }))
+
+        except Exception as e:
+            return make_response(jsonify({
+                "message": "error with update.",
+                "error": e
+            }))
+        
     else:
         
         return make_response(jsonify({

@@ -1,5 +1,5 @@
 from flask.blueprints import Blueprint
-from app.controller.pickup_controller import create_pickup_point, get_pickup_points_for_user, check_user_is_passenger, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup, get_passenger_details, complete_pickup
+from app.controller.pickup_controller import get_pickup_details, create_pickup_point, get_pickup_points_for_user, check_user_is_passenger, get_pickup_points_for_location, join_pickup, get_host_details, exit_pickup, get_passenger_details, complete_pickup
 
 pickupBP = Blueprint('pickup', __name__, url_prefix='/api/v1/pickup')
 
@@ -38,3 +38,7 @@ def get_passenger_dets():
 @pickupBP.route("/checkuserpassenger", methods=["POST","GET"])
 def check_if_user_is_passenger():
     return check_user_is_passenger()
+
+@pickupBP.route("/getpickupdetails", methods=["POST","GET"])
+def get_pickup_data():
+    return get_pickup_details()
