@@ -171,7 +171,7 @@ def get_all_transactions():
         
         user = User._get_collection()
 
-        findUser = user.find_one({'userID': request.json["userID"]})
+        findUser = user.find_one({'userID': request.json["userId"]})
 
         if findUser is not None:
             
