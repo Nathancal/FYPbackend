@@ -3,6 +3,7 @@ from mongoengine.fields import BooleanField,DecimalField, EmailField, StringFiel
 from mongoengine.document import Document
 
 from app.model.user_rating_model import userRating
+from app.model.transaction_model import Transactions
 
 class User(Document):
 
@@ -17,4 +18,6 @@ class User(Document):
         totalMiles = DecimalField(default=20.00)
         avgScore = DecimalField(default=3.75)
         reviews = ListField(EmbeddedDocumentField(userRating))
+        transactions = ListField(EmbeddedDocumentField(Transactions))
+
 

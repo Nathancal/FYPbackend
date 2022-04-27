@@ -68,22 +68,29 @@ def rate_user():
 
     if userToRate is not None:
 
-        userReview = userRating()
+        try:
 
-        userReview.ratingId = uuid.uuid4().hex
-        userReview.score = request.json["score"]
-        userReview.comment = request.json["comment"]
-        userReview.userPostedId = request.json["userId"]
+            userReview = userRating()
 
-        userToRate.reviews.append(userReview)
+            userReview.ratingId = uuid.uuid4().hex
+            userReview.score = request.json["score"]
+            userReview.comment = request.json["comment"]
+            userReview.userPostedId = request.json["userId"]
 
-        userToRate.save()
+            userToRate.reviews.append(userReview)
 
-        return make_response(jsonify({
-            "message": "user has been successfully reviewed."
-        }))
+            userToRate.save()
+
+            return make_response(jsonify({
+                "message": "user has been successfully reviewed."
+            }),201)
+        except Exception as e:
+
+            return make_response(jsonify({
+                "message": "An unknown error has occoured please try again."
+            }),403)
 
     else:
         return make_response(jsonify({
             "message": "user has not been found."
-        }))
+        }),404)
