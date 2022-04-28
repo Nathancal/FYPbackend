@@ -46,3 +46,5 @@ def get_message():
             "data": parse_json(message)
 
         }))
+
+def get_all_
