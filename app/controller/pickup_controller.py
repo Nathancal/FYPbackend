@@ -102,12 +102,16 @@ def check_user_is_passenger():
                 return make_response(jsonify({
                     "message": "you are the host of this pickup",
                     "isHost": True,
-
                 }))
+        return make_response(jsonify({
+            "message": "you are not a passenger in this pickup.",
+            "isPassenger": False,
+            "isHost": False
+        }))
 
     else:
         return make_response(jsonify({
-            "message": "user has not been found in this pickup.",
+            "message": "This pickup has not been found",
             "isPassenger": False
         }))
 
@@ -280,7 +284,7 @@ def get_passenger_details():
 
     userCol = User._get_collection()
 
-    userFound = userCol.find({
+    userFound = userCol.find_one({
         "userID": request.json["passengerId"]
     })
 

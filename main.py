@@ -91,21 +91,33 @@ def joined(message):
                         emit('joined', {
                              'message': 'Already joined the pickup'})
 
-                if message['userId'] not in activeUsers:
+                if  message['userId'] in activeUsers:
+                    journeyGroup = message["pickupId"]
+
+
+                    emit('joined', {'msg': message["forename"] + ' has joined the pickup', 'userId': message["userId"],
+                    'forename': message['forename'], 'users': activeUsers}, room=journeyGroup, broadcast=True)
+
                     print("level 6")
+                else:
+                    journeyGroup = message["pickupId"]
+
+
+                    join_room(journeyGroup)
 
                     user = {'userId': message["userId"],
+                            'forename': message["forename"],
                             'pickupId': message["pickupId"],
                             'joined': False}
                     activeUsers.append(user)
 
-                journeyGroup = message["pickupId"]
+                    emit('joined', {'msg': message["forename"] + ' has joined the pickup', 'userId': message["userId"],
+                    'forename': message['forename'], 'users': activeUsers}, room=journeyGroup, broadcast=True)
+
 
                 print("Pickup id: " + message["pickupId"])
-                join_room(journeyGroup)
 
-                emit('joined', {'msg': message["forename"] + ' has joined the pickup', 'userId': message["userId"],
-                                'forename': message['forename'], 'users': activeUsers}, room=journeyGroup, broadcast=True)
+               
 
 
 if __name__ == '__main__':
