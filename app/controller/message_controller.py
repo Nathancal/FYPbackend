@@ -14,7 +14,7 @@ def create_message():
         message.messageId = uuid.uuid4().hex
         message.senderId = request.json["userId"]
         message.recepientId = request.json["recepientId"]
-        message.associatedPickupId = request.json["pickupId"]
+        message.chatId = request.json["pickupId"]
         message.text = request.json["message"]
         message.sentAt = datetime.datetime.utcnow()
 
@@ -47,4 +47,3 @@ def get_message():
 
         }))
 
-def get_all_

@@ -47,7 +47,7 @@ def signup():
     except ValidationError as e:
         return make_response(jsonify({
             "messaage": "One of the required fields has invalid or missing data."
-        }),403)
+        }), 403)
 
 
 def login():
@@ -62,7 +62,7 @@ def login():
         crossRefPassword = bytes(checkEmailExists["password"], 'UTF-8')
 
         if bcrypt.checkpw(bytes(password, 'UTF-8'), crossRefPassword):
- 
+
             token = jwt.encode({
                 'user': checkEmailExists["email"],
                 'admin': checkEmailExists["admin"],
@@ -86,6 +86,24 @@ def login():
         }), 404)
 
 
+def get_user_info():
+
+    user = User._get_collection()
+
+    findUser = user.find_one({'userID': request.json["userId"]})
+
+    if findUser is not None:
+
+        return make_response(jsonify({
+            "message": "user successfully found",
+            "data": parse_json(findUser)
+        }), 201)
+    else:
+        return make_response(jsonify({
+            "message": "user has not been found"
+        }), 404)
+
+
 def get_user_miles():
 
     user = User._get_collection()
@@ -97,11 +115,11 @@ def get_user_miles():
         return make_response(jsonify({
             "message": "miles returned successfully",
             "miles": findUser["totalMiles"]
-        }),201)
+        }), 201)
     else:
         return make_response(jsonify({
             "message": "user has not been found."
-        }),404)
+        }), 404)
 
 
 def update_user_miles():
@@ -121,23 +139,24 @@ def update_user_miles():
 
             return make_response(jsonify({
             "message": "miles successfully updated."
-        }),200)
+        }), 200)
 
         except Exception as e:
             return make_response(jsonify({
                 "message": "error with update.",
                 "error": e
-            }),403)
-        
+            }), 403)
+
     else:
-        
+
         return make_response(jsonify({
             "message": "user has not been found"
-        }),404) 
+        }), 404)
+
 
 def generate_transaction():
 
-    try: 
+    try:
         userToTransact = User.objects.get(userID=request.json["userId"])
 
         trans = Transactions()
@@ -155,9 +174,7 @@ def generate_transaction():
 
         return make_response(jsonify({
             "message": "transaction successfully completed"
-        }),200)
-
-
+        }), 200)
 
     except Exception as e:
         return make_response(jsonify({
@@ -165,30 +182,61 @@ def generate_transaction():
             "error": e
         }), 401)
 
+
 def get_all_transactions():
 
     try:
-        
+
         user = User._get_collection()
 
         findUser = user.find_one({'userID': request.json["userId"]})
 
         if findUser is not None:
-            
+
             if findUser["transactions"] is not None:
 
                 return make_response(jsonify({
                     "message": "transactions list successfully found.",
                     "data": findUser["transactions"]
-                }),200)
+                }), 200)
             else:
                 return make_response(jsonify({
-                    "message":"no transactions have been found associated with this account."
-                }),404)
+                    "message": "no transactions have been found associated with this account."
+                }), 404)
         else:
             return make_response(jsonify({
                 "message": "this user has not been found."
-            }),404)
+            }), 404)
+    except Exception as e:
+        return make_response(jsonify({
+            "message": "an unknown exception has occured."
+        }), 403)
+
+
+def get_user_reviews():
+
+    user = User._get_collection()
+
+    try:
+        findUser = user.find_one({'userID': request.json["userId"]})
+    
+        if findUser is not None:
+
+            if len(findUser["reviews"]) > 0:
+
+                    return make_response(jsonify({
+                        "message": "Reviews have been found for this user",
+                        "data": findUser["transactions"]
+                    }), 200)
+            else:
+                    return make_response(jsonify({
+                        "message": "no reviews have been found for this user"
+                    }), 404)
+        else:
+                return make_response(jsonify({
+                    "message": "this user has not been found."
+                }),404)
+
     except Exception as e:
         return make_response(jsonify({
             "message": "an unknown exception has occured."

@@ -45,17 +45,17 @@ def create_pickup_point():
         pickupCol = Pickup._get_collection()
 
         joinPickup = pickupCol.update_one({
-                        "pickupId": pickup.pickupId,
-                    },
-                        {"$push": {
-                            "passengers":
-                            {"passengerId": request.json["hostId"],
-                             "date": datetime.datetime.utcnow(),
-                             "host": True,
-                             "joined": False
-                             }
+            "pickupId": pickup.pickupId,
+        },
+            {"$push": {
+                "passengers":
+                {"passengerId": request.json["hostId"],
+                 "date": datetime.datetime.utcnow(),
+                 "host": True,
+                 "joined": False
+                 }
 
-                        }}, True)
+            }}, True)
 
         return make_response(jsonify({
             "message": "rendezvous successfully created!",
@@ -382,4 +382,31 @@ def get_pickup_details():
         return make_response(jsonify({
             "message": "pickup has been found",
             "pickupMiles": pickupFound
+        }))
+
+
+def get_pickup_user_passenger():
+
+    pickupCol = Pickup()._get_collection()
+
+    try:
+
+        pickupFound = pickupCol.find(
+            {"$and": [
+                {"passengers.passengerId": request.json["userId"]},
+                {"pickupStatus": "pending"},
+                {"hostId": {
+                    "$ne": request.json["userId"]
+                }}
+
+            ]}, {"_id": 0})
+
+        return make_response(jsonify({
+            "message": "user pickups as passenger successfully found.",
+            "data": parse_json(pickupFound)
+        }))
+
+    except Exception as e:
+        return make_response(jsonify({
+            "message": "error getting user pickups."
         }))
