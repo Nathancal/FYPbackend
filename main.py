@@ -2,6 +2,7 @@ import enum
 from app.view.journey_routes import journeyBP
 from app.view.user_routes import userBP
 from app.view.user_rating_routes import userRatingBP
+from app.view.chat_routes import chatBP
 
 from app.view.pickup_routes import pickupBP
 from app import app
@@ -27,6 +28,7 @@ app.register_blueprint(userBP)
 app.register_blueprint(pickupBP)
 app.register_blueprint(journeyBP)
 app.register_blueprint(userRatingBP)
+app.register_blueprint(chatBP)
 
 activeUsers = []
 

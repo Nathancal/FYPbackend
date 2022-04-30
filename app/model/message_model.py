@@ -1,13 +1,11 @@
 from sqlite3 import Date
 from mongoengine.fields import BooleanField, DateTimeField, DecimalField, DynamicField, EmbeddedDocumentField, ListField, StringField
-from mongoengine.document import Document
+from mongoengine.document import EmbeddedDocument
 
-class Message(Document):
+class Message(EmbeddedDocument):
 
-    messageId = StringField(required=True)
-    senderId = StringField()
-    recepientId = StringField()
-    associatedPickupId = StringField()
+    messageId = StringField()
+    userSentId = StringField()
     text = StringField()
     sentAt = DateTimeField()
     received = BooleanField(default=False)
